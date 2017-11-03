@@ -242,6 +242,23 @@ impl<'a> BitReader<'a> {
     }
 }
 
+impl<'a> ::std::io::Read for BitReader<'a> {
+    // TODO: This is a trivial implementation, optimize this in the future to avoid a
+    // function invocation in every iteration, range check etc, and instead just use
+    // a clever shifting mechanism to always read a byte shift and yield the next byte
+    // here.
+    fn read(&mut self, buf: &mut [u8]) -> ::std::io::Result<usize> {
+        for counter in 0..buf.len() {
+            buf[counter] = match self.read_u8(8) {
+                Ok(val) => val,
+                Err(BitReaderError::NotEnoughData { .. }) => return Ok(counter),
+                Err(e) => return Err(::std::io::Error::new(::std::io::ErrorKind::Other, e))
+            };
+        }
+        Ok(buf.len())
+    }
+}
+
 /// Result type for those BitReader operations that can fail.
 pub type Result<T> = result::Result<T, BitReaderError>;
 

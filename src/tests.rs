@@ -150,3 +150,22 @@ fn boolean_values() {
         assert_eq!(reader.read_bool().unwrap(), v & 0x01 == 1);
     }
 }
+
+#[test]
+fn std_read() {
+    use std::io::Read;
+    let bytes: Vec<u8> = (0..8).collect();
+    let mut reader = BitReader::new(&bytes);
+
+    let mut b1 = [0u8; 3];
+    assert_eq!(reader.read(&mut b1).unwrap(), 3);
+    assert_eq!(b1, [0, 1, 2]);
+
+    let mut b2 = [0u8; 1];
+    assert_eq!(reader.read(&mut b2).unwrap(), 1);
+    assert_eq!(b2, [3]);
+
+    let mut b3 = [0u8; 6];
+    assert_eq!(reader.read(&mut b3).unwrap(), 4);
+    assert_eq!(b3, [4, 5, 6, 7, 0, 0]);
+}
